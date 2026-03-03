@@ -1,0 +1,12 @@
+# Output directory (generated files)
+output/
+
+# Log files
+*.log
+
+# macOS system files
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak

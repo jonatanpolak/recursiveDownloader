@@ -1,67 +1,103 @@
-# Recursive Downloader for WSDLs and XSDs
+# Recursive WSDL/XSD Downloader
 
-This simple bash script is used to download a WSDL and all related XSDs. If the XSD contains some other related XSDs, it will also import then recursively.
+A bash script to recursively download WSDL files and all their dependent XSD schemas.
 
-## Getting Started
+## Features
 
-- Please pull the script from github, you can also download from [here](recursiveDownloader.sh?raw=true)
-- Add execution right
+- Downloads WSDL files and recursively resolves all XSD dependencies
+- Handles relative and absolute URLs
+- URL encoding support for special characters
+- Configurable output directory
+- Color-coded output
+- Respects existing files (skips downloads)
 
-```
-chmod u+x recursiveDownloader.sh
-```
+## Requirements
 
-### Example of WSDL with import
+- bash (version 4+)
+- wget
 
-Here is an example of WSDL with two XSDs
+## Installation
 
-![alt text](resources/1-DirectoryStructure.PNG "Directory")
+Clone the repository and make the script executable:
 
-And the WSDL contains import (the resource is available on the *schemaLocation* tag)
-
-![alt text](resources/2-WSDLwithImport.PNG "WSDL")
-
-
-### Run the tool
-
-To run the tool, just put the WSDL (or the main XSD) as parameter:
-```
-./recursiveDownloader.sh http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl/HelloWorld.wsdl
+```bash
+git clone https://github.com/jonatanpolak/recursiveDownloader.git
+cd recursiveDownloader
+chmod +x recursiveDownloader.sh
 ```
 
-The downloader will download this resource and then will open it to find any dependencies until no dependencies are found:
-```
-Recursive Downloader
-Command:    ./recursiveDownloader.sh
-Parameters: http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl/HelloWorld.wsdl
+## Usage
 
-Creating output folder
-File to download HelloWorld.wsdl on http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl
-        Downloading HelloWorld.wsdl
-                wget -> 2018-01-31 14:45:29 URL:http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl/HelloWorld.wsdl [1975/1975] -> "HelloWorld.wsdl" [1]
-
-        Downloading HelloWorldRequest.xsd
-                wget -> 2018-01-31 14:45:29 URL:http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl/HelloWorldRequest.xsd [514/514] -> "HelloWorldRequest.xsd" [1]
-
-                No more dependencies for HelloWorldRequest.xsd
-        Downloading HelloWorldResponse.xsd
-                wget -> 2018-01-31 14:45:30 URL:http://192.168.0.96:8080/HelloWorld_WebServiceProject/wsdl/HelloWorldResponse.xsd [445/445] -> "HelloWorldResponse.xsd" [1]
-
-                No more dependencies for HelloWorldResponse.xsd
+```bash
+./recursiveDownloader.sh <WSDL_URL> [OPTIONS]
 ```
 
-The files will be generated in the output folder:
-```
->cd output
->ll
-total 4582
-drwxrwxrwx 0 root root 4096 Jan 31 13:51 ./
-drwxrwxrwx 0 root root 4096 Jan 31 13:51 ../
--rwxrwxrwx 1 root root  514 Jan 30 01:16 HelloWorldRequest.xsd*
--rwxrwxrwx 1 root root  445 Jan 30 01:17 HelloWorldResponse.xsd*
--rwxrwxrwx 1 root root 1975 Jan 31 11:01 HelloWorld.wsdl*
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-h, --help` | Show help message | - |
+| `-o, --output` | Output directory | `output` |
+| `-v, --verbose` | Enable verbose output | off |
+
+### Examples
+
+Download a WSDL file to the default output directory:
+
+```bash
+./recursiveDownloader.sh https://example.com/service.wsdl
 ```
 
-### Advanced configuration
-- wget is used to retrieve to resources and $wget_params is set by default with non-verbose, no-clobber (overwrite files if already present) and with SSL validation disabled. Please update wget_params is you need to change the wget behaviour
-- the dependencies is using the *schemaLocation* tag. To use other tag please update the function **getDependencies**
+Download to a custom directory:
+
+```bash
+./recursiveDownloader.sh https://example.com/service.wsdl -o myschemas
+```
+
+## Output
+
+The script creates an output directory (default: `output/`) and downloads:
+1. The main WSDL file
+2. All XSD schemas referenced via `schemaLocation`
+3. Any nested dependencies (recursively, up to 10 levels deep)
+
+Example output:
+
+```
+[INFO] WSDL Fetcher - Starting download
+[INFO] URL: https://example.com/service.wsdl
+[INFO] Output directory: output
+
+[INFO] Downloading: service.wsdl
+[INFO] Downloaded: service.wsdl
+[INFO] Downloading: types.xsd
+[INFO] Downloaded: types.xsd
+[INFO] No more dependencies for: types.xsd
+
+[INFO] Download complete!
+[INFO] Files saved to: output/
+```
+
+## Configuration
+
+The script uses `wget` with the following default parameters:
+- Timeout: 60 seconds
+- Non-verbose output
+- No-clobber (skip existing files)
+- TLSv1.2 for secure connections
+- SSL certificate validation disabled
+
+To modify these settings, edit the `wget_params` variable in the script:
+
+```bash
+wget_params="-T 60 -nv -nc --secure-protocol=TLSv1_2 --no-check-certificate --timeout=60"
+```
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Author
+
+Original author: Anthony/Rabiaza
+Fork author: Jonatan Polak
