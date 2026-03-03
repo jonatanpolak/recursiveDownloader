@@ -100,4 +100,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Author
 
 Original author: Anthony/Rabiaza
+
 Fork author: Jonatan Polak
